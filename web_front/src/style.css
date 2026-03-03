@@ -1,0 +1,61 @@
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --nav-height: 64px;
+  --glass-bg: rgba(10, 10, 10, 0.35);
+  --glass-border: rgba(0, 0, 0, 0.8);
+  --glass-blur: 18px;
+  --cursor-size: 36px;
+  --cursor-border: 2.5px;
+}
+
+html {
+  scroll-snap-type: y mandatory;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #fff;
+  cursor: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  cursor: none;
+}
+
+button, input, textarea {
+  cursor: none;
+}
+
+#app {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 首页分页滚动：滚动容器需在 body，但 home-page 内联块需占满 */
+.scroll-section {
+  scroll-snap-align: start;
+}
+
+/* 纯净模式：隐藏导航等，只显示背景 */
+body.pure-mode .glass-nav,
+body.pure-mode .top-right-controls,
+body.pure-mode #waifu,
+body.pure-mode .summon-btn {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
