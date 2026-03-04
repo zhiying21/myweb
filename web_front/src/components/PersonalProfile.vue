@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Chart, registerables } from 'chart.js'
-import { useAuth } from '@/stores/auth'
 
 const router = useRouter()
 
@@ -53,7 +52,6 @@ const paginatedDocs = computed(() => {
 })
 
 const selectedDoc = ref(null)
-const selectedDocPath = computed(() => selectedDoc.value?.path ?? '')
 
 function selectDoc(doc) {
   selectedDoc.value = doc
@@ -223,7 +221,6 @@ onUnmounted(() => clearTimeout(typeTimer))
 
 <template>
   <section class="profile-section">
-    <!-- 1. 网站介绍：全屏独立区块 -->
     <div class="intro-fullscreen profile-block scroll-section">
       <div class="intro-content intro-float">
         <p class="intro-kaomoji">(｡・ω・｡)ノ</p>
@@ -235,10 +232,8 @@ onUnmounted(() => clearTimeout(typeTimer))
       </div>
     </div>
 
-    <!-- 2. 合并区：左侧三板块 + 右侧文档展示 -->
     <div class="merged-section scroll-section">
       <div class="merged-layout">
-        <!-- 左侧：三板块，半透明浅绿白渐变 -->
         <aside class="left-panels">
           <div class="panel info-block">
             <div class="avatar-wrap">
@@ -287,7 +282,6 @@ onUnmounted(() => clearTimeout(typeTimer))
           </div>
         </aside>
 
-        <!-- 右侧：图片 + 标题 + 描述，点击跳转 -->
         <div class="doc-panel">
           <div class="doc-cards-list">
             <div
@@ -324,7 +318,42 @@ onUnmounted(() => clearTimeout(typeTimer))
   padding: 60px 20px 80px;
 }
 
-/* 1. 网站介绍 */
+/* 开灯模式字体颜色 - 绿色系 */
+[data-theme="day"] .intro-text,
+[data-theme="day"] .intro-kaomoji,
+[data-theme="day"] .intro-kaomoji-end,
+[data-theme="day"] .info-id,
+[data-theme="day"] .info-en,
+[data-theme="day"] .block-title,
+[data-theme="day"] .stat-value,
+[data-theme="day"] .stat-label,
+[data-theme="day"] .doc-card-title,
+[data-theme="day"] .doc-card-desc,
+[data-theme="day"] .doc-card-btn,
+[data-theme="day"] .page-btn,
+[data-theme="day"] .page-info,
+[data-theme="day"] .social-link {
+  color: #059669 !important;
+}
+
+/* 关灯模式字体颜色 - 蓝色系 */
+[data-theme="night"] .intro-text,
+[data-theme="night"] .intro-kaomoji,
+[data-theme="night"] .intro-kaomoji-end,
+[data-theme="night"] .info-id,
+[data-theme="night"] .info-en,
+[data-theme="night"] .block-title,
+[data-theme="night"] .stat-value,
+[data-theme="night"] .stat-label,
+[data-theme="night"] .doc-card-title,
+[data-theme="night"] .doc-card-desc,
+[data-theme="night"] .doc-card-btn,
+[data-theme="night"] .page-btn,
+[data-theme="night"] .page-info,
+[data-theme="night"] .social-link {
+  color: #7dd3fc !important;
+}
+
 .intro-fullscreen {
   position: relative;
   min-height: 100vh;
@@ -334,8 +363,6 @@ onUnmounted(() => clearTimeout(typeTimer))
   justify-content: center;
   padding: 60px 24px 80px;
   background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
 }
 
 .intro-content {
@@ -356,17 +383,9 @@ onUnmounted(() => clearTimeout(typeTimer))
 .intro-kaomoji-end { font-size: clamp(1.2rem, 3vw, 1.6rem); margin-top: 20px; opacity: 0.9; }
 .intro-text { font-size: clamp(1rem, 2.5vw, 1.2rem); line-height: 2; letter-spacing: 1px; min-height: 2.8em; }
 
-[data-theme="day"] .intro-text,
-[data-theme="day"] .intro-kaomoji,
-[data-theme="day"] .intro-kaomoji-end { color: #1e3a5f; }
-[data-theme="night"] .intro-text,
-[data-theme="night"] .intro-kaomoji,
-[data-theme="night"] .intro-kaomoji-end { color: #e0f2fe; }
-
 .cursor-blink { animation: blink 1s step-end infinite; }
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-/* 2. 合并区 */
 .scroll-section {
   min-height: 100vh;
   display: flex;
@@ -389,7 +408,6 @@ onUnmounted(() => clearTimeout(typeTimer))
   align-items: stretch;
 }
 
-/* 左侧三板块：半透明浅绿白渐变 */
 .left-panels {
   display: flex;
   flex-direction: column;
@@ -400,7 +418,6 @@ onUnmounted(() => clearTimeout(typeTimer))
   padding: 28px 24px;
   background: linear-gradient(160deg, rgba(167, 243, 208, 0.35) 0%, rgba(255, 255, 255, 0.25) 50%, rgba(209, 250, 229, 0.3) 100%);
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.5);
   box-shadow: 0 8px 32px rgba(134, 239, 172, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.6);
@@ -437,10 +454,6 @@ onUnmounted(() => clearTimeout(typeTimer))
 
 .info-id { font-size: 15px; font-weight: 500; }
 .info-en { font-size: 13px; margin-top: 6px; opacity: 0.9; }
-[data-theme="day"] .info-id,
-[data-theme="day"] .info-en { color: #0284c7; }
-[data-theme="night"] .info-id,
-[data-theme="night"] .info-en { color: #38bdf8; }
 
 .social-links { display: flex; gap: 16px; margin-top: 12px; }
 .social-link {
@@ -449,11 +462,9 @@ onUnmounted(() => clearTimeout(typeTimer))
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #0ea5e9;
   transition: all 0.35s ease;
 }
-[data-theme="night"] .social-link { color: #38bdf8; }
-.social-link:hover { transform: scale(1.1); color: #0284c7; }
+.social-link:hover { transform: scale(1.1); }
 .social-link svg { width: 22px; height: 22px; }
 
 .block-title {
@@ -461,9 +472,7 @@ onUnmounted(() => clearTimeout(typeTimer))
   font-weight: 600;
   letter-spacing: 2px;
   margin-bottom: 18px;
-  color: #0ea5e9;
 }
-[data-theme="night"] .block-title { color: #38bdf8; }
 
 .stats-grid {
   display: grid;
@@ -486,10 +495,8 @@ onUnmounted(() => clearTimeout(typeTimer))
   border-color: rgba(167, 243, 208, 0.15);
 }
 
-.stat-value { display: block; font-size: 1.4rem; font-weight: 600; color: #0ea5e9; }
-[data-theme="night"] .stat-value { color: #38bdf8; }
-.stat-label { font-size: 13px; margin-top: 4px; letter-spacing: 1px; color: #0ea5e9; }
-[data-theme="night"] .stat-label { color: #bae6fd; }
+.stat-value { display: block; font-size: 1.4rem; font-weight: 600; }
+.stat-label { font-size: 13px; margin-top: 4px; letter-spacing: 1px; }
 
 .chart-wrap {
   height: 140px;
@@ -517,12 +524,10 @@ onUnmounted(() => clearTimeout(typeTimer))
   font-weight: 500;
 }
 
-/* 右侧文档区 */
 .doc-panel {
   padding: 32px;
   background: linear-gradient(160deg, rgba(167, 243, 208, 0.2) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(209, 250, 229, 0.18) 100%);
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow: 0 8px 32px rgba(134, 239, 172, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -586,25 +591,16 @@ onUnmounted(() => clearTimeout(typeTimer))
 }
 
 .doc-card-body { flex: 2; min-width: 0; }
-.doc-card-title {
-  font-size: 17px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #0284c7;
-}
-[data-theme="night"] .doc-card-title { color: #38bdf8; }
-
+.doc-card-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
 .doc-card-desc {
   font-size: 14px;
   line-height: 1.6;
-  color: #0ea5e9;
   margin-bottom: 12px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-[data-theme="night"] .doc-card-desc { color: #bae6fd; }
 
 .doc-card-btn {
   font-size: 13px;
@@ -612,7 +608,6 @@ onUnmounted(() => clearTimeout(typeTimer))
   border-radius: 8px;
   border: 1px solid rgba(5, 150, 105, 0.5);
   background: rgba(167, 243, 208, 0.3);
-  color: #0284c7;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -622,7 +617,6 @@ onUnmounted(() => clearTimeout(typeTimer))
 [data-theme="night"] .doc-card-btn {
   border-color: rgba(110, 231, 183, 0.4);
   background: rgba(6, 95, 70, 0.4);
-  color: #38bdf8;
 }
 
 .doc-pagination {
@@ -637,7 +631,6 @@ onUnmounted(() => clearTimeout(typeTimer))
   border-radius: 8px;
   border: 1px solid rgba(5, 150, 105, 0.4);
   background: rgba(255, 255, 255, 0.5);
-  color: #0284c7;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -651,10 +644,8 @@ onUnmounted(() => clearTimeout(typeTimer))
 [data-theme="night"] .page-btn {
   background: rgba(0, 0, 0, 0.3);
   border-color: rgba(110, 231, 183, 0.3);
-  color: #38bdf8;
 }
-.page-info { font-size: 13px; color: rgba(255,255,255,0.7); }
-[data-theme="day"] .page-info { color: #0369a1; }
+.page-info { font-size: 13px; }
 
 @media (max-width: 900px) {
   .merged-layout {

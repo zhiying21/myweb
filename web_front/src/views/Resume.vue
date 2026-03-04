@@ -48,17 +48,6 @@ const htmlContent = computed(() => (content.value ? md.render(content.value) : '
 
 <template>
   <div class="resume-page">
-    <div class="resume-orbit-layer" aria-hidden="true">
-      <div class="orbit orbit-1">
-        <span class="orbit-dot" />
-      </div>
-      <div class="orbit orbit-2">
-        <span class="orbit-dot" />
-      </div>
-      <div class="orbit orbit-3">
-        <span class="orbit-dot" />
-      </div>
-    </div>
     <div v-if="!unlocked" class="password-gate">
       <div class="gate-card">
         <h2>简历</h2>
@@ -92,7 +81,8 @@ const htmlContent = computed(() => (content.value ? md.render(content.value) : '
   min-height: 100vh;
   position: relative;
   overflow: hidden;
-  background: radial-gradient(circle at top, #e8fdf3 0, #c9f6dd 35%, #bfe4ff 100%);
+  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+  transition: background 0.3s ease;
 }
 
 .password-gate {
@@ -107,22 +97,24 @@ const htmlContent = computed(() => (content.value ? md.render(content.value) : '
   width: 100%;
   max-width: 360px;
   padding: 40px 32px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .gate-card h2 {
   font-size: 1.5rem;
-  font-weight: 600;
-  color: #1a1a1a;
+  font-weight: 700;
+  color: #1f2937;
   margin-bottom: 8px;
   letter-spacing: 2px;
 }
 
 .hint {
   font-size: 14px;
-  color: #666;
+  color: #6b7280;
   margin-bottom: 24px;
 }
 
@@ -130,20 +122,25 @@ const htmlContent = computed(() => (content.value ? md.render(content.value) : '
   width: 100%;
   padding: 12px 16px;
   font-size: 15px;
-  border: 1px solid #e0e0e0;
+  border: 2px solid #e5e7eb;
   border-radius: 8px;
   outline: none;
-  transition: border-color 0.2s;
+  background: #f9fafb;
+  color: #1f2937;
+  transition: all 0.2s;
 }
 
 .password-input:focus {
-  border-color: #0ea5e9;
+  border-color: #10b981;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .error-msg {
   margin-top: 12px;
   font-size: 13px;
-  color: #dc2626;
+  color: #ef4444;
+  font-weight: 500;
 }
 
 .submit-btn {
@@ -151,17 +148,19 @@ const htmlContent = computed(() => (content.value ? md.render(content.value) : '
   margin-top: 20px;
   padding: 12px;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   color: #fff;
-  background: #0ea5e9;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
 
 .submit-btn:hover:not(:disabled) {
-  background: #0284c7;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
 .submit-btn:disabled {
@@ -176,26 +175,30 @@ const htmlContent = computed(() => (content.value ? md.render(content.value) : '
 .resume-inner {
   max-width: 800px;
   margin: 0 auto;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
   overflow: hidden;
 }
 
 .resume-header {
   padding: 32px 40px 24px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 2px solid #f0fdf4;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%);
 }
 
 .resume-header h1 {
   font-size: 1.5rem;
-  font-weight: 600;
-  color: #1a1a1a;
+  font-weight: 700;
+  color: #1f2937;
   letter-spacing: 2px;
 }
 
 .resume-body {
   padding: 32px 40px 48px;
+  color: #374151;
 }
 
 :deep(.md-body h1),
@@ -203,24 +206,29 @@ const htmlContent = computed(() => (content.value ? md.render(content.value) : '
 :deep(.md-body h3) {
   margin-top: 1.5em;
   margin-bottom: 0.6em;
-  font-weight: 600;
-  color: #1a1a1a;
-  background: rgba(255, 255, 255, 0.85);
-  padding: 10px 14px;
+  font-weight: 700;
+  color: #1f2937;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.08) 100%);
+  padding: 12px 16px;
   border-radius: 8px;
-  border-left: 4px solid #0ea5e9;
+  border-left: 4px solid #10b981;
 }
 
 :deep(.md-body h2) {
-  font-size: 1.1em;
+  font-size: 1.2em;
   padding-bottom: 8px;
   border-bottom: none;
 }
 
+:deep(.md-body h3) {
+  font-size: 1.05em;
+}
+
 :deep(.md-body p),
 :deep(.md-body li) {
-  color: #333;
-  line-height: 1.75;
+  color: #374151;
+  line-height: 1.8;
+  font-size: 15px;
 }
 
 :deep(.md-body table) {
@@ -230,160 +238,175 @@ const htmlContent = computed(() => (content.value ? md.render(content.value) : '
 
 :deep(.md-body th),
 :deep(.md-body td) {
-  border: 1px solid #e5e5e5;
-  padding: 10px 14px;
+  border: 1px solid #e5e7eb;
+  padding: 12px 16px;
   text-align: left;
+  color: #374151;
+}
+
+:deep(.md-body th) {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
+  font-weight: 600;
 }
 
 :deep(.md-body a) {
-  color: #0ea5e9;
+  color: #059669;
+  font-weight: 500;
+  text-decoration: none;
+  border-bottom: 2px solid rgba(5, 150, 105, 0.3);
+  transition: all 0.2s;
+}
+
+:deep(.md-body a:hover) {
+  border-bottom-color: #059669;
 }
 
 :deep(.md-body hr) {
   border: none;
-  border-top: 1px solid #eee;
+  border-top: 2px solid #f0fdf4;
   margin: 1.5em 0;
 }
-.resume-orbit-layer {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-  opacity: 0.8;
-}
 
-.orbit {
-  position: absolute;
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  border: 1px dashed rgba(59, 130, 246, 0.15);
-  animation: orbit-float 18s linear infinite;
-}
-
-.orbit-1 {
-  top: 10%;
-  left: 5%;
-}
-
-.orbit-2 {
-  top: 55%;
-  right: -40px;
-  animation-duration: 22s;
-}
-
-.orbit-3 {
-  bottom: -60px;
-  left: 40%;
-  width: 260px;
-  height: 260px;
-  animation-duration: 26s;
-}
-
-.orbit-dot {
-  position: absolute;
-  top: 15%;
-  left: 60%;
-  width: 16px;
-  height: 16px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 30% 30%, #93c5fd, #1d4ed8);
-  box-shadow:
-    0 0 12px rgba(59, 130, 246, 0.9),
-    0 0 28px rgba(59, 130, 246, 0.7);
-  transform-origin: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.orbit-dot::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 1px;
-  transform-origin: left center;
-  transform: translateY(-50%);
-  background: linear-gradient(to right, rgba(148, 163, 253, 0.1), rgba(96, 165, 250, 0.8));
-  opacity: 0;
-  transition: width 0.3s ease, opacity 0.3s ease;
-}
-
-.resume-inner:hover .orbit-dot,
-.orbit-dot:hover {
-  transform: scale(1.35);
-  box-shadow:
-    0 0 18px rgba(59, 130, 246, 1),
-    0 0 40px rgba(59, 130, 246, 0.9);
-}
-
-.resume-inner:hover .orbit-dot::after,
-.orbit-dot:hover::after {
-  width: 140px;
-  opacity: 1;
-}
-
-@keyframes orbit-float {
-  0% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
-  }
-  50% {
-    transform: translate3d(10px, -12px, 0) rotate(180deg);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) rotate(360deg);
-  }
-}
-
+/* 深色主题 - 使用 :deep() 正确写法 */
 [data-theme="night"] .resume-page {
-  background: #020617;
+  background: linear-gradient(135deg, #1f2937 0%, #1a202c 50%, #0f1419 100%);
 }
 
 [data-theme="night"] .resume-inner,
 [data-theme="night"] .gate-card {
-  background: rgba(15, 23, 42, 0.97);
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.7);
+  background: rgba(31, 41, 55, 0.98);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="night"] .resume-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.08) 100%);
 }
 
 [data-theme="night"] .resume-header h1,
-[data-theme="night"] .gate-card h2,
+[data-theme="night"] .gate-card h2 {
+  color: #ffffff;
+}
+
 [data-theme="night"] .hint {
-  color: #e5e7eb;
+  color: #d1d5db;
 }
 
 [data-theme="night"] .password-input {
-  background: rgba(15, 23, 42, 0.9);
-  border-color: rgba(148, 163, 184, 0.8);
-  color: #e5e7eb;
+  background: rgba(55, 65, 81, 0.9);
+  border-color: rgba(209, 213, 219, 0.4);
+  color: #ffffff;
+}
+
+[data-theme="night"] .password-input:focus {
+  border-color: #10b981;
+  background: rgba(55, 65, 81, 1);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+[data-theme="night"] .error-msg {
+  color: #fca5a5;
 }
 
 [data-theme="night"] .submit-btn {
-  background: #0ea5e9;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
 }
 
-[data-theme="night"] ::deep(.md-body h1),
-[data-theme="night"] ::deep(.md-body h2),
-[data-theme="night"] ::deep(.md-body h3) {
-  color: #e5e7eb;
-  background: rgba(15, 23, 42, 0.9);
-  border-left-color: #38bdf8;
+[data-theme="night"] .submit-btn:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
 }
 
-[data-theme="night"] ::deep(.md-body p),
-[data-theme="night"] ::deep(.md-body li) {
-  color: #e5e7eb;
+[data-theme="night"] :deep(.resume-body .md-body) {
+  color: #f3f4f6 !important;
 }
 
-[data-theme="night"] ::deep(.md-body th),
-[data-theme="night"] ::deep(.md-body td) {
-  border-color: rgba(148, 163, 184, 0.5);
+[data-theme="night"] :deep(.resume-body .md-body h1),
+[data-theme="night"] :deep(.resume-body .md-body h2),
+[data-theme="night"] :deep(.resume-body .md-body h3) {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%);
+  border-left-color: #10b981;
 }
 
-[data-theme="night"] ::deep(.md-body a) {
-  color: #38bdf8;
+[data-theme="night"] :deep(.resume-body .md-body p),
+[data-theme="night"] :deep(.resume-body .md-body li) {
+  color: #f3f4f6 !important;
 }
 
-[data-theme="night"] ::deep(.md-body hr) {
-  border-top-color: rgba(148, 163, 184, 0.6);
+[data-theme="night"] :deep(.resume-body .md-body th),
+[data-theme="night"] :deep(.resume-body .md-body td) {
+  border-color: rgba(209, 213, 219, 0.3);
+  color: #e5e7eb !important;
+}
+
+[data-theme="night"] :deep(.resume-body .md-body th) {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%);
+}
+
+[data-theme="night"] :deep(.resume-body .md-body a) {
+  color: #4ade80 !important;
+  border-bottom-color: rgba(74, 222, 128, 0.3);
+}
+
+[data-theme="night"] :deep(.resume-body .md-body a:hover) {
+  border-bottom-color: #4ade80;
+}
+
+[data-theme="night"] :deep(.resume-body .md-body hr) {
+  border-top-color: rgba(209, 213, 219, 0.2);
+}
+
+[data-theme="night"] :deep(.resume-body .md-body strong),
+[data-theme="night"] :deep(.resume-body .md-body em),
+[data-theme="night"] :deep(.resume-body .md-body code) {
+  color: #f3f4f6;
+}
+
+[data-theme="night"] :deep(.resume-body .md-body ul),
+[data-theme="night"] :deep(.resume-body .md-body ol) {
+  color: #f3f4f6;
+}
+</style>
+
+<!-- 深色主题全局样式，用于处理 v-html 生成的动态内容 -->
+<style>
+[data-theme="night"] .md-body {
+  color: #f3f4f6 !important;
+}
+
+[data-theme="night"] .md-body * {
+  color: #f3f4f6 !important;
+}
+
+[data-theme="night"] .md-body h1,
+[data-theme="night"] .md-body h2,
+[data-theme="night"] .md-body h3,
+[data-theme="night"] .md-body h4,
+[data-theme="night"] .md-body h5,
+[data-theme="night"] .md-body h6 {
+  color: #ffffff !important;
+}
+
+[data-theme="night"] .md-body p,
+[data-theme="night"] .md-body li,
+[data-theme="night"] .md-body td,
+[data-theme="night"] .md-body th,
+[data-theme="night"] .md-body strong,
+[data-theme="night"] .md-body em,
+[data-theme="night"] .md-body span,
+[data-theme="night"] .md-body div {
+  color: #f3f4f6 !important;
+}
+
+[data-theme="night"] .md-body a {
+  color: #4ade80 !important;
+}
+
+[data-theme="night"] .md-body code,
+[data-theme="night"] .md-body pre {
+  color: #f3f4f6 !important;
+  background: rgba(50, 50, 50, 0.5) !important;
 }
 </style>

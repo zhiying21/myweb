@@ -143,12 +143,12 @@ h1 {
 
 [data-theme="day"] .resources-container h1,
 [data-theme="day"] .resources-container .name {
-  color: #1e293b;
+  color: #7dd3fc;
   text-shadow: none;
 }
 
 [data-theme="day"] .resources-container .sub,
 [data-theme="day"] .resources-container .empty {
-  color: rgba(30, 41, 59, 0.85);
+  color: #7dd3fc;
 }
 </style>
