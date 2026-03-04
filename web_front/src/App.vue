@@ -1,20 +1,43 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
+import { ref, watch, computed } from 'vue'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
 import CustomCursor from '@/components/CustomCursor.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 import MusicPlayer from '@/components/MusicPlayer.vue'
 import Live2dWidget from '@/components/Live2dWidget.vue'
+import AuthModal from '@/components/AuthModal.vue'
+import { useAuth } from '@/stores/auth'
 
-const navItems = [
-  { to: '/', label: '首页' },
-  { to: '/resume', label: '简历' },
-  { to: '/blog', label: '博客' },
-  { to: '/notes', label: '笔记' },
-  { to: '/message', label: '留言板' },
-  { to: '/resources', label: '资源分享' },
-  { to: '/love-diary', label: '恋爱日记' },
-  { to: '/contact', label: '联系我' },
-]
+const route = useRoute()
+const showAuth = ref(false)
+const { isLoggedIn, logout, user, fetchUser } = useAuth()
+
+const navItems = computed(() => {
+  const items = [
+    { to: '/', label: '首页' },
+    { to: '/resume', label: '简历' },
+    { to: '/blog', label: '博客' },
+    { to: '/notes', label: '笔记' },
+    { to: '/message', label: '留言板' },
+    { to: '/resources', label: '资源分享' },
+    { to: '/love-diary', label: '恋爱日记' },
+    { to: '/contact', label: '联系我' },
+  ]
+  if (isLoggedIn.value) items.push({ to: '/profile', label: '个人主页' })
+  if (user.value?.role === 'ADMIN') items.push({ to: '/admin', label: '管理' })
+  return items
+})
+
+watch(() => route.query.auth, (v) => {
+  if (v === '1') showAuth.value = true
+}, { immediate: true })
+
+function onAuthSuccess() {
+  showAuth.value = false
+  fetchUser()
+}
+
+fetchUser()
 </script>
 
 <template>
@@ -35,6 +58,8 @@ const navItems = [
         >
           {{ item.label }}
         </RouterLink>
+        <button v-if="!isLoggedIn" type="button" class="nav-link" @click="showAuth = true">登入</button>
+        <button v-else type="button" class="nav-link" @click="logout">登出</button>
       </div>
     </nav>
 
@@ -45,6 +70,8 @@ const navItems = [
     </div>
 
     <RouterView />
+
+    <AuthModal v-if="showAuth" @close="showAuth = false" @success="onAuthSuccess" />
 
     <Live2dWidget />
   </div>
@@ -78,6 +105,12 @@ const navItems = [
   border-radius: 30px;
   transition: all 0.3s ease;
   white-space: nowrap;
+}
+
+button.nav-link {
+  border: none;
+  background: transparent;
+  cursor: pointer;
 }
 
 .nav-link:hover {

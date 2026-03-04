@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Chart, registerables } from 'chart.js'
-import { notesList, blogList, allDocuments } from '@/data/documents'
+import { useAuth } from '@/stores/auth'
 
 const router = useRouter()
 
@@ -30,10 +30,12 @@ let charIndex = 0
 let isDeleting = false
 
 const visitCount = ref(0)
+const runningMinutes = ref(0)
 const chartRef = ref(null)
 
-const notesCount = notesList.length
-const blogCount = blogList.length
+const notesCount = ref(0)
+const blogCount = ref(0)
+const allDocuments = ref([])
 
 const techStack = [
   { name: 'Vue', value: 35, color: '#7dd3fc' },
@@ -44,10 +46,10 @@ const techStack = [
 
 const PAGE_SIZE = 4
 const currentPage = ref(1)
-const totalPages = computed(() => Math.ceil(allDocuments.length / PAGE_SIZE))
+const totalPages = computed(() => Math.ceil(allDocuments.value.length / PAGE_SIZE))
 const paginatedDocs = computed(() => {
   const start = (currentPage.value - 1) * PAGE_SIZE
-  return allDocuments.slice(start, start + PAGE_SIZE)
+  return allDocuments.value.slice(start, start + PAGE_SIZE)
 })
 
 const selectedDoc = ref(null)
@@ -59,7 +61,7 @@ function selectDoc(doc) {
 
 function goToDoc(doc) {
   const route = doc.type === 'notes' ? '/notes' : '/blog'
-  router.push({ path: route, query: { path: doc.path } })
+  router.push({ path: route, query: { id: doc.id } })
 }
 
 function prevPage() {
@@ -72,7 +74,7 @@ function nextPage() {
 
 watch(currentPage, () => {
   const docs = paginatedDocs.value
-  if (docs.length && (!selectedDoc.value || !docs.find((d) => d.path === selectedDoc.value.path))) {
+  if (docs.length && (!selectedDoc.value || !docs.find((d) => d.id === selectedDoc.value.id))) {
     selectDoc(docs[0])
   }
 })
@@ -174,8 +176,40 @@ async function fetchVisitCount() {
   } catch { visitCount.value = 0 }
 }
 
-onMounted(() => {
+async function fetchRunningMinutes() {
+  try {
+    const { default: request } = await import('@/utils/request')
+    const res = await request.get('/site/running-minutes')
+    runningMinutes.value = (res && res.data != null) ? res.data : 0
+  } catch { runningMinutes.value = 0 }
+}
+
+async function fetchDocs() {
+  try {
+    const { default: request } = await import('@/utils/request')
+    const [notesRes, blogRes] = await Promise.all([
+      request.get('/document/list', { params: { type: 'notes' } }),
+      request.get('/document/list', { params: { type: 'blog' } }),
+    ])
+    const notes = (notesRes && notesRes.data) ? notesRes.data : []
+    const blogs = (blogRes && blogRes.data) ? blogRes.data : []
+    notesCount.value = notes.length
+    blogCount.value = blogs.length
+    allDocuments.value = [
+      ...notes.map((d) => ({ ...d, type: 'notes', path: d.id, image: d.coverImage })),
+      ...blogs.map((d) => ({ ...d, type: 'blog', path: d.id, image: d.coverImage })),
+    ]
+  } catch {
+    allDocuments.value = []
+    notesCount.value = 0
+    blogCount.value = 0
+  }
+}
+
+onMounted(async () => {
   fetchVisitCount()
+  fetchRunningMinutes()
+  await fetchDocs()
   typeTimer = setTimeout(typeTick, 400)
   if (paginatedDocs.value.length) selectDoc(paginatedDocs.value[0])
   nextTick(() => {
@@ -228,6 +262,10 @@ onUnmounted(() => clearTimeout(typeTimer))
             <h3 class="block-title">网站数据统计</h3>
             <div class="stats-grid">
               <div class="stat-item">
+                <span class="stat-value">{{ runningMinutes }}</span>
+                <span class="stat-label">运行(分钟)</span>
+              </div>
+              <div class="stat-item">
                 <span class="stat-value">{{ notesCount }}</span>
                 <span class="stat-label">笔记数</span>
               </div>
@@ -256,7 +294,7 @@ onUnmounted(() => clearTimeout(typeTimer))
               v-for="doc in paginatedDocs"
               :key="doc.path"
               class="doc-card"
-              :class="{ active: selectedDoc?.path === doc.path }"
+              :class="{ active: selectedDoc?.id === doc.id }"
               @click="selectDoc(doc)"
             >
               <div class="doc-card-img">
@@ -429,7 +467,7 @@ onUnmounted(() => clearTimeout(typeTimer))
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   margin-bottom: 18px;
 }

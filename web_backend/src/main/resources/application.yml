@@ -8,6 +8,10 @@ spring:
     name: zhiying-web-backend
   profiles:
     active: dev
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   # 数据库
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -42,6 +46,15 @@ mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 上传目录（相对项目运行目录）
+upload:
+  path: ./uploads
+
+# JWT
+jwt:
+  secret: zhiying-web-secret-key-change-in-production-2024
+  expiration-ms: 604800000  # 7 days
 
 # 日志
 logging:

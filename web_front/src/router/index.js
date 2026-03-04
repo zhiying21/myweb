@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuth } from '@/stores/auth'
 
 const routes = [
   {
@@ -49,6 +50,18 @@ const routes = [
     component: () => import('@/views/Contact.vue'),
     meta: { title: '联系我' },
   },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import('@/views/Profile.vue'),
+    meta: { title: '个人主页', requiresAuth: true },
+  },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: () => import('@/views/Admin.vue'),
+    meta: { title: '管理后台', requiresAuth: true, requiresAdmin: true },
+  },
 ]
 
 const router = createRouter({
@@ -56,9 +69,22 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   if (to.meta?.title) {
     document.title = `${to.meta.title} - 枝莺`
+  }
+  const auth = useAuth()
+  const token = localStorage.getItem('zhiying_token')
+  const isLoggedIn = !!token
+  if (to.meta?.requiresAuth && !isLoggedIn) {
+    return { path: '/', query: { auth: '1' } }
+  }
+  if (to.meta?.requiresAdmin) {
+    if (!isLoggedIn) return { path: '/', query: { auth: '1' } }
+    if (!auth.user?.value?.role) await auth.fetchUser()
+    if (auth.user?.value?.role !== 'ADMIN') {
+      return { path: '/' }
+    }
   }
 })
 

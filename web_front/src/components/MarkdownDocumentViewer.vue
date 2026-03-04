@@ -6,6 +6,7 @@ import 'highlight.js/styles/github-dark.css'
 
 const props = defineProps({
   path: { type: String, default: '' },
+  content: { type: String, default: '' },
 })
 
 const content = ref('')
@@ -39,6 +40,10 @@ const htmlContent = computed(() => {
 })
 
 async function fetchContent() {
+  if (props.content) {
+    content.value = props.content
+    return
+  }
   if (!props.path) {
     content.value = ''
     return
@@ -57,7 +62,7 @@ async function fetchContent() {
   }
 }
 
-watch(() => props.path, fetchContent, { immediate: true })
+watch([() => props.path, () => props.content], fetchContent, { immediate: true })
 </script>
 
 <template>
@@ -158,9 +163,9 @@ watch(() => props.path, fetchContent, { immediate: true })
 .md-body :deep(code) {
   padding: 0.2em 0.4em;
   font-size: 0.9em;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.35);
   border-radius: 4px;
-  color: #7dd3fc;
+  color: #e2e8f0;
 }
 
 .md-body :deep(pre) {
@@ -168,13 +173,13 @@ watch(() => props.path, fetchContent, { immediate: true })
   padding: 1em;
   overflow-x: auto;
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.4);
+  background: #1e293b;
 }
 
 .md-body :deep(pre code) {
   padding: 0;
   background: none;
-  color: inherit;
+  color: #e2e8f0;
 }
 
 .md-body :deep(a) {
@@ -218,7 +223,16 @@ watch(() => props.path, fetchContent, { immediate: true })
 }
 
 [data-theme="day"] .md-body :deep(code) {
-  color: #0284c7;
+  color: #0c4a6e;
+  background: rgba(14, 165, 233, 0.12);
+}
+
+[data-theme="day"] .md-body :deep(pre) {
+  background: #f1f5f9;
+}
+
+[data-theme="day"] .md-body :deep(pre code) {
+  color: #0f172a;
 }
 
 [data-theme="day"] .md-body :deep(a) {

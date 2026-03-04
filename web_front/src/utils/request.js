@@ -10,6 +10,13 @@ const request = axios.create({
   },
 })
 
+request.interceptors.request.use((config) => {
+  const t = localStorage.getItem('zhiying_token')
+  if (t) config.headers.Authorization = `Bearer ${t}`
+  if (config.data instanceof FormData) delete config.headers['Content-Type']
+  return config
+})
+
 // 响应拦截：统一处理业务 code 与错误
 request.interceptors.response.use(
   (res) => {
@@ -21,7 +28,10 @@ request.interceptors.response.use(
   },
   (err) => {
     const message = err.response?.data?.message || err.message || '网络错误'
-    return Promise.reject(new Error(message))
+    const e = new Error(message)
+    e.status = err.response?.status
+    e.response = err.response
+    return Promise.reject(e)
   }
 )
 

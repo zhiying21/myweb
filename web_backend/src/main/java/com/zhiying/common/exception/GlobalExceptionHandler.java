@@ -41,9 +41,15 @@ public class GlobalExceptionHandler {
         return Result.fail(ResultCode.BAD_REQUEST.getCode(), message);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Result<Void> handleIllegalArg(IllegalArgumentException e) {
+        log.warn("参数异常: {}", e.getMessage());
+        return Result.fail(ResultCode.BAD_REQUEST.getCode(), e.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public Result<Void> handleException(Exception e) {
-        log.error("系统异常", e);
+        log.error("系统异常: {}", e.getMessage(), e);
         return Result.fail(ResultCode.FAIL.getCode(), "系统繁忙，请稍后重试");
     }
 }
