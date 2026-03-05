@@ -21,7 +21,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
-    private static final String DEFAULT_AVATAR = null; // 前端展示时用默认图
+    private static final String DEFAULT_AVATAR = "https://api.dicebear.com/7.x/anime/svg?seed=";
     private static final String[] NICKNAME_PREFIX = {"小", "阿", "萌", "星", "云", "风", "叶", "雨", "月", "花"};
     private static final String[] NICKNAME_SUFFIX = {"叶子", "星星", "微风", "小鹿", "兔子", "猫咪", "晴天", "彩虹", "薄荷", "柠檬"};
     private static final Random RANDOM = new Random();
@@ -34,8 +34,9 @@ public class AuthService {
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole("USER");
-        user.setAvatar(DEFAULT_AVATAR);
-        user.setNickname(generateRandomNickname());
+        String nickname = generateRandomNickname();
+        user.setAvatar(DEFAULT_AVATAR + nickname.replaceAll("[^a-zA-Z0-9]", "") + RANDOM.nextInt(100));
+        user.setNickname(nickname);
         userMapper.insert(user);
         return buildAuthResponse(user);
     }

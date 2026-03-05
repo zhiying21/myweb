@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted, provide, watch } from 'vue'
 import PersonalProfile from '@/components/PersonalProfile.vue'
 import ScrollHint from '@/components/ScrollHint.vue'
 import { useScrollSection } from '@/composables/useScrollSection'
+import request from '@/utils/request'
 
 const pureMode = ref(false)
 provide('pureMode', pureMode)
@@ -18,6 +19,9 @@ const TYPE_SPEED = 150
 const DELETE_SPEED = 80
 const PAUSE_AFTER_TYPE = 2500
 const PAUSE_AFTER_DELETE = 800
+
+// 网站统计数据
+const stats = ref({ runningHours: 0, visitCount: 0, blogCount: 0, noteCount: 0 })
 
 function tick() {
   if (!isDeleting) {
@@ -42,6 +46,25 @@ function tick() {
   }
 }
 
+async function fetchStats() {
+  try {
+    // 记录访问
+    await request.post('/site/visit')
+    const res = await request.get('/site/stats')
+    const d = res?.data ?? res
+    if (d) {
+      stats.value = {
+        runningHours: d.runningHours ?? 0,
+        visitCount: d.visitCount ?? 0,
+        blogCount: d.blogCount ?? 0,
+        noteCount: d.noteCount ?? 0,
+      }
+    }
+  } catch {
+    // 静默失败
+  }
+}
+
 watch(pureMode, (v) => {
   document.body.classList.toggle('pure-mode', v)
 })
@@ -49,6 +72,7 @@ watch(pureMode, (v) => {
 onMounted(() => {
   timer = setTimeout(tick, 600)
   if (pureMode.value) document.body.classList.add('pure-mode')
+  fetchStats()
 })
 
 onUnmounted(() => {
@@ -85,6 +109,29 @@ onUnmounted(() => {
           <span class="typed-text">{{ displayed }}</span>
           <span class="cursor-blink">|</span>
         </p>
+
+        <!-- 网站统计卡片 -->
+        <div class="stats-bar">
+          <div class="stat-item">
+            <span class="stat-value">{{ stats.runningHours }}</span>
+            <span class="stat-label">运行小时</span>
+          </div>
+          <div class="stat-divider" />
+          <div class="stat-item">
+            <span class="stat-value">{{ stats.visitCount }}</span>
+            <span class="stat-label">访问次数</span>
+          </div>
+          <div class="stat-divider" />
+          <div class="stat-item">
+            <span class="stat-value">{{ stats.blogCount }}</span>
+            <span class="stat-label">博客文章</span>
+          </div>
+          <div class="stat-divider" />
+          <div class="stat-item">
+            <span class="stat-value">{{ stats.noteCount }}</span>
+            <span class="stat-label">学习笔记</span>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -137,6 +184,7 @@ onUnmounted(() => {
   justify-content: center;
   height: 100%;
   text-align: center;
+  gap: 0;
 }
 
 .hero-title {
@@ -172,6 +220,48 @@ onUnmounted(() => {
   50% { opacity: 0; }
 }
 
+/* 统计栏 */
+.stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 40px;
+  padding: 16px 32px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0 24px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(125, 211, 252, 0.5);
+  letter-spacing: 1px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 2px;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
 /* 纯净模式：只显示背景（在 Home 内） */
 .pure-mode .hero-section,
 .pure-mode .scroll-hint,
@@ -201,4 +291,8 @@ onUnmounted(() => {
   border-color: rgba(255, 255, 255, 0.6);
 }
 
+[data-theme="day"] .stat-value {
+  color: #fff;
+  text-shadow: 0 0 12px rgba(14, 165, 233, 0.6);
+}
 </style>

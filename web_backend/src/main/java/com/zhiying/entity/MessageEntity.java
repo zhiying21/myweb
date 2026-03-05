@@ -12,4 +12,5 @@ public class MessageEntity extends BaseEntity {
 
     private Long userId;
     private String content;
+    private Integer likeCount;
 }

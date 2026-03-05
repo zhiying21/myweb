@@ -23,7 +23,7 @@ spring:
     redis:
       host: localhost
       port: 6379
-      password:20051021
+      password: 20051021
       database: 0
       timeout: 5000ms
       lettuce:
@@ -55,6 +55,16 @@ upload:
 jwt:
   secret: zhiying-web-secret-key-change-in-production-2024
   expiration-ms: 604800000  # 7 days
+
+# SpringDoc OpenAPI (Swagger)
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+    doc-expansion: none
+  api-docs:
+    path: /v3/api-docs
 
 # 日志
 logging:

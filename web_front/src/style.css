@@ -59,3 +59,66 @@ body.pure-mode .summon-btn {
   pointer-events: none !important;
   visibility: hidden !important;
 }
+
+/* ===== 全局通用样式 ===== */
+
+/* 通用玻璃卡片 */
+.glass-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* 通用表单输入 */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="datetime-local"],
+textarea,
+select {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  transition: border-color 0.2s;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="datetime-local"]:focus,
+textarea:focus {
+  border-color: rgba(14, 165, 233, 0.5);
+  outline: none;
+}
+
+/* 日间模式字体颜色 */
+[data-theme="day"] h1,
+[data-theme="day"] h2,
+[data-theme="day"] h3 {
+  color: #fff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="day"] .glass-card {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 夜晚模式字体颜色（默认淡蓝色） */
+[data-theme="night"] p,
+[data-theme="night"] span:not(.nav-link) {
+  color: rgba(186, 230, 253, 0.85);
+}
+
+/* 通用动画 */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeInUp 0.4s ease forwards;
+}

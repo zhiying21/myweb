@@ -25,13 +25,15 @@ onMounted(fetchResources)
   <div class="page">
     <VideoBackground />
     <div class="resources-container">
-      <h1>资源分享</h1>
-      <p class="sub">点击图标下载</p>
+      <div class="page-header glass-card">
+        <h1>资源分享</h1>
+        <p class="sub">精选工具与资源，点击下载</p>
+      </div>
       <div class="resource-grid">
         <div
           v-for="item in resources"
           :key="item.id"
-          class="resource-item"
+          class="resource-item glass-card"
           @click="download(item)"
         >
           <div class="icon-wrap">
@@ -39,9 +41,12 @@ onMounted(fetchResources)
             <span v-else class="icon-placeholder">{{ item.name?.charAt(0) || '?' }}</span>
           </div>
           <span class="name">{{ item.name }}</span>
+          <span class="download-hint">点击下载 ↓</span>
         </div>
       </div>
-      <p v-if="!resources.length" class="empty">暂无资源</p>
+      <div v-if="!resources.length" class="empty glass-card">
+        <p>🔍 暂无资源，管理员尚未上传</p>
+      </div>
     </div>
   </div>
 </template>
@@ -55,49 +60,56 @@ onMounted(fetchResources)
 }
 
 .resources-container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
-h1 {
+.page-header {
+  padding: 32px 40px 28px;
+  margin-bottom: 36px;
   text-align: center;
+}
+
+h1 {
+  font-size: 2rem;
   margin-bottom: 8px;
   letter-spacing: 4px;
   color: #fff;
-  text-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
 }
 
 .sub {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.85);
-  margin-bottom: 40px;
+  color: rgba(186, 230, 253, 0.85);
   font-size: 14px;
-  text-shadow: 0 0 12px rgba(0, 0, 0, 0.25);
+  letter-spacing: 1px;
+  margin: 0;
 }
 
 .resource-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 20px;
 }
 
 .resource-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 24px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 10px;
+  padding: 28px 16px 20px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .resource-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.resource-item:hover .download-hint {
+  opacity: 1;
 }
 
 .icon-wrap {
@@ -112,43 +124,66 @@ h1 {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  border-radius: 8px;
 }
 
 .icon-placeholder {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 26px;
+  font-weight: 700;
   color: #38bdf8;
-  background: rgba(56, 189, 248, 0.2);
-  border-radius: 12px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 14px;
 }
 
 .name {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   text-align: center;
   color: #fff;
-  text-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  line-height: 1.4;
+}
+
+.download-hint {
+  font-size: 12px;
+  color: rgba(186, 230, 253, 0.7);
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
 .empty {
+  padding: 60px 40px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.8);
-  margin-top: 40px;
+  margin-top: 12px;
 }
 
-[data-theme="day"] .resources-container h1,
-[data-theme="day"] .resources-container .name {
-  color: #7dd3fc;
-  text-shadow: none;
+.empty p {
+  color: rgba(186, 230, 253, 0.7);
+  font-size: 15px;
 }
 
-[data-theme="day"] .resources-container .sub,
-[data-theme="day"] .resources-container .empty {
-  color: #7dd3fc;
+/* 日间模式 */
+[data-theme="day"] h1 {
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="day"] .sub,
+[data-theme="day"] .empty p,
+[data-theme="day"] .download-hint {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+[data-theme="day"] .name {
+  color: #fff;
+}
+
+[data-theme="day"] .resource-item:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 </style>

@@ -16,4 +16,6 @@ public class DocumentEntity extends BaseEntity {
     private String content;
     private String coverImage;
     private Long userId;
+    private Integer likeCount;
+    private Integer viewCount;
 }

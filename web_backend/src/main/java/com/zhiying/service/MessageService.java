@@ -1,6 +1,7 @@
 package com.zhiying.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.zhiying.common.exception.BusinessException;
 import com.zhiying.entity.*;
 import com.zhiying.mapper.*;
@@ -18,6 +19,7 @@ public class MessageService {
     private final MessageMapper messageMapper;
     private final MessageCommentMapper commentMapper;
     private final CommentLikeMapper likeMapper;
+    private final MessageLikeMapper messageLikeMapper;
     private final UserMapper userMapper;
 
     public List<Map<String, Object>> list() {
@@ -29,6 +31,8 @@ public class MessageService {
             item.put("id", m.getId());
             item.put("content", m.getContent());
             item.put("createTime", m.getCreateTime());
+            item.put("likeCount", m.getLikeCount() != null ? m.getLikeCount() : 0);
+            item.put("userId", m.getUserId());
             UserEntity u = userMapper.selectById(m.getUserId());
             item.put("userNickname", u != null && u.getNickname() != null && !u.getNickname().isBlank() ? u.getNickname() : "匿名");
             item.put("userAvatar", u != null ? u.getAvatar() : null);
@@ -65,6 +69,7 @@ public class MessageService {
         m.put("likeCount", c.getLikeCount() != null ? c.getLikeCount() : 0);
         m.put("createTime", c.getCreateTime());
         m.put("replyToId", c.getReplyToId());
+        m.put("userId", c.getUserId());
         UserEntity u = userMapper.selectById(c.getUserId());
         m.put("userNickname", u != null && u.getNickname() != null && !u.getNickname().isBlank() ? u.getNickname() : "匿名");
         m.put("userAvatar", u != null ? u.getAvatar() : null);
@@ -75,7 +80,17 @@ public class MessageService {
         MessageEntity m = new MessageEntity();
         m.setUserId(userId);
         m.setContent(content);
+        m.setLikeCount(0);
         messageMapper.insert(m);
+    }
+
+    public void deleteMessage(Long messageId, Long userId, String role) {
+        MessageEntity m = messageMapper.selectById(messageId);
+        if (m == null) throw new BusinessException("留言不存在");
+        boolean isAdmin = "ADMIN".equals(role);
+        boolean isAuthor = m.getUserId() != null && m.getUserId().equals(userId);
+        if (!isAdmin && !isAuthor) throw new BusinessException("无权限删除");
+        messageMapper.deleteById(messageId);
     }
 
     public void addComment(Long userId, Long messageId, Long parentId, Long replyToId, String content) {
@@ -89,6 +104,54 @@ public class MessageService {
         c.setContent(content);
         c.setLikeCount(0);
         commentMapper.insert(c);
+    }
+
+    public void deleteComment(Long commentId, Long userId, String role) {
+        MessageCommentEntity c = commentMapper.selectById(commentId);
+        if (c == null) throw new BusinessException("评论不存在");
+        boolean isAdmin = "ADMIN".equals(role);
+        boolean isAuthor = c.getUserId() != null && c.getUserId().equals(userId);
+        if (!isAdmin && !isAuthor) throw new BusinessException("无权限删除");
+        commentMapper.deleteById(commentId);
+    }
+
+    @Transactional
+    public Map<String, Object> toggleMessageLike(Long userId, Long messageId) {
+        MessageEntity msg = messageMapper.selectById(messageId);
+        if (msg == null) throw new BusinessException("留言不存在");
+        MessageLikeEntity existing = messageLikeMapper.selectOne(
+                new LambdaQueryWrapper<MessageLikeEntity>()
+                        .eq(MessageLikeEntity::getMessageId, messageId)
+                        .eq(MessageLikeEntity::getUserId, userId));
+        boolean liked;
+        int likeCount = msg.getLikeCount() != null ? msg.getLikeCount() : 0;
+        if (existing != null) {
+            messageLikeMapper.deleteById(existing.getId());
+            likeCount = Math.max(0, likeCount - 1);
+            liked = false;
+        } else {
+            MessageLikeEntity like = new MessageLikeEntity();
+            like.setMessageId(messageId);
+            like.setUserId(userId);
+            messageLikeMapper.insert(like);
+            likeCount++;
+            liked = true;
+        }
+        messageMapper.update(null, new LambdaUpdateWrapper<MessageEntity>()
+                .eq(MessageEntity::getId, messageId)
+                .set(MessageEntity::getLikeCount, likeCount));
+        Map<String, Object> result = new HashMap<>();
+        result.put("liked", liked);
+        result.put("likeCount", likeCount);
+        return result;
+    }
+
+    public boolean hasLikedMessage(Long userId, Long messageId) {
+        if (userId == null) return false;
+        return messageLikeMapper.selectOne(
+                new LambdaQueryWrapper<MessageLikeEntity>()
+                        .eq(MessageLikeEntity::getMessageId, messageId)
+                        .eq(MessageLikeEntity::getUserId, userId)) != null;
     }
 
     @Transactional

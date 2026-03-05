@@ -27,24 +27,33 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 公开接口
+                        // 健康检查
                         .requestMatchers("/health/**").permitAll()
+                        // 认证接口
                         .requestMatchers("/auth/register", "/auth/login").permitAll()
+                        // 网站配置（公开）
                         .requestMatchers("/site/**").permitAll()
+                        // 恋爱日记（公开）
                         .requestMatchers("/love/**").permitAll()
+                        // 资源列表（公开）
                         .requestMatchers("/resource/list").permitAll()
-                        .requestMatchers("/resume/verify", "/resume/content").permitAll()
+                        // 简历（公开 - 由前端控制密码）
+                        .requestMatchers("/resume/content").permitAll()
+                        // 工单提交（公开）
                         .requestMatchers("/ticket/create").permitAll()
+                        // 上传文件访问（公开）
                         .requestMatchers("/uploads/**").permitAll()
+                        // 文档列表/详情（公开）
                         .requestMatchers("/document/list", "/document/detail/**").permitAll()
+                        // 文档评论列表（公开）
+                        .requestMatchers("/document/*/comments").permitAll()
+                        // 留言列表（公开）
                         .requestMatchers("/message/list").permitAll()
+                        // Swagger（公开）
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
                         // 管理员接口
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        // 需登录
-                        .requestMatchers("/auth/me", "/auth/logout", "/auth/profile", "/auth/upload").authenticated()
-                        .requestMatchers("/message/add", "/message/comment", "/message/comment/**").authenticated()
-                        .requestMatchers("/document/upload").authenticated()
-                        .requestMatchers("/comment/**").authenticated()
+                        // 需要登录的接口
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

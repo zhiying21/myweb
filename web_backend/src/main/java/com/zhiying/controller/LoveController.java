@@ -10,6 +10,10 @@ import com.zhiying.service.LoveConfigService;
 import com.zhiying.service.LoveDiaryService;
 import com.zhiying.service.LovePhotoService;
 import com.zhiying.service.LoveReminderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -30,10 +34,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 恋爱日记控制器
- * 包含配置、日记、纪念日、照片的CRUD接口
- */
+@Tag(name = "恋爱日记模块", description = "恋爱配置、日记、纪念日提醒、照片墙的完整 CRUD 接口；大部分读接口公开，写接口需 ADMIN 权限")
 @Slf4j
 @RestController
 @RequestMapping("/love")
@@ -59,11 +60,13 @@ public class LoveController {
 
     // ==================== 配置接口 ====================
 
+    @Operation(summary = "获取恋爱配置", description = "返回恋爱开始时间、双方名称和头像，无需登录")
     @GetMapping("/config")
     public Result<Map<String, Object>> getConfig() {
         return Result.ok(loveConfigService.getConfig());
     }
 
+    @Operation(summary = "保存恋爱配置（ADMIN）", security = @SecurityRequirement(name = "BearerAuth"))
     @PostMapping("/config")
     @PreAuthorize("hasRole('ADMIN')")
     public Result<Void> saveConfig(@RequestBody Map<String, Object> body) {
@@ -83,6 +86,7 @@ public class LoveController {
 
     // ==================== 日记接口 ====================
 
+    @Operation(summary = "获取全部日记列表", description = "返回所有日记，无需登录")
     @GetMapping("/diaries")
     public Result<List<LoveDiaryEntity>> getDiaries() {
         try {
@@ -93,6 +97,7 @@ public class LoveController {
         }
     }
 
+    @Operation(summary = "分页获取日记", description = "支持 pageNum 和 pageSize 参数，无需登录")
     @GetMapping("/diaries/page")
     public Result<Page<LoveDiaryEntity>> getDiariesPage(
             @RequestParam(defaultValue = "1") int pageNum,
@@ -105,8 +110,9 @@ public class LoveController {
         }
     }
 
+    @Operation(summary = "获取日记详情", description = "根据 ID 获取单条日记内容，无需登录")
     @GetMapping("/diaries/{id}")
-    public Result<LoveDiaryEntity> getDiary(@PathVariable Long id) {
+    public Result<LoveDiaryEntity> getDiary(@Parameter(description = "日记ID") @PathVariable Long id) {
         try {
             return Result.ok(loveDiaryService.queryById(id));
         } catch (Exception e) {
@@ -115,6 +121,7 @@ public class LoveController {
         }
     }
 
+    @Operation(summary = "创建日记", description = "新增一条恋爱日记，无需登录（可由前端密码保护）")
     @PostMapping("/diaries")
     public Result<LoveDiaryEntity> createDiary(@RequestBody Map<String, Object> body) {
         try {
@@ -147,8 +154,9 @@ public class LoveController {
         }
     }
 
+    @Operation(summary = "更新日记")
     @PutMapping("/diaries/{id}")
-    public Result<LoveDiaryEntity> updateDiary(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    public Result<LoveDiaryEntity> updateDiary(@Parameter(description = "日记ID") @PathVariable Long id, @RequestBody Map<String, Object> body) {
         try {
             LoveDiaryEntity diary = new LoveDiaryEntity();
             diary.setId(id);
@@ -178,8 +186,9 @@ public class LoveController {
         }
     }
 
+    @Operation(summary = "删除日记")
     @DeleteMapping("/diaries/{id}")
-    public Result<Void> deleteDiary(@PathVariable Long id) {
+    public Result<Void> deleteDiary(@Parameter(description = "日记ID") @PathVariable Long id) {
         try {
             loveDiaryService.delete(id);
             return Result.ok();
@@ -189,6 +198,7 @@ public class LoveController {
         }
     }
 
+    @Operation(summary = "日记情感分析", description = "根据日记内容进行简单情感评分（1-5分）和建议")
     @PostMapping("/analyze-emotion")
     public Result<Map<String, Object>> analyzeEmotion(@RequestBody Map<String, String> body) {
         try {
@@ -208,6 +218,7 @@ public class LoveController {
 
     // ==================== 纪念日接口 ====================
 
+    @Operation(summary = "获取全部纪念日列表", description = "无需登录")
     @GetMapping("/reminders")
     public Result<List<LoveReminderEntity>> getReminders() {
         try {
@@ -218,6 +229,7 @@ public class LoveController {
         }
     }
 
+    @Operation(summary = "获取即将到来的纪念日", description = "返回未来30天内的纪念日，无需登录")
     @GetMapping("/reminders/upcoming")
     public Result<List<LoveReminderEntity>> getUpcomingReminders() {
         try {
@@ -250,6 +262,7 @@ public class LoveController {
         }
     }
 
+    @Operation(summary = "创建纪念日")
     @PostMapping("/reminders")
     public Result<LoveReminderEntity> createReminder(@RequestBody Map<String, Object> body) {
         try {
@@ -323,6 +336,7 @@ public class LoveController {
 
     // ==================== 照片接口 ====================
 
+    @Operation(summary = "获取全部照片列表", description = "无需登录")
     @GetMapping("/photos")
     public Result<List<LovePhotoEntity>> getPhotos() {
         try {
@@ -365,6 +379,7 @@ public class LoveController {
         }
     }
 
+    @Operation(summary = "上传照片（multipart）", description = "使用 multipart/form-data 上传照片文件，无需登录（前端密码保护）")
     @PostMapping("/photos")
     public Result<LovePhotoEntity> uploadPhoto(
             @RequestParam MultipartFile photo,

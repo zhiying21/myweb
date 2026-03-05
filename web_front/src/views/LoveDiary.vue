@@ -2,9 +2,9 @@
 import { ref, computed, onMounted } from 'vue'
 import request from '@/utils/request'
 
-const PASSWORD = 'AC_pH_under7'
 const passwordInput = ref('')
 const unlocked = ref(false)
+const verifying = ref(false)
 const config = ref({ startTime: null, name1: 'TA', name2: 'TA', avatar1: null, avatar2: null })
 const loading = ref(true)
 const pwdError = ref('')
@@ -27,13 +27,26 @@ const selectedPhotoFile = ref(null)
 const photoUploading = ref(false)
 
 async function verifyPassword() {
-  if (passwordInput.value !== PASSWORD) {
-    pwdError.value = '密码错误'
+  if (!passwordInput.value.trim()) {
+    pwdError.value = '请输入密码'
     return
   }
-  unlocked.value = true
+  verifying.value = true
   pwdError.value = ''
-  await loadData()
+  try {
+    const res = await request.post('/site/love-diary/verify', { password: passwordInput.value })
+    const ok = res?.data ?? res
+    if (ok) {
+      unlocked.value = true
+      await loadData()
+    } else {
+      pwdError.value = '密码错误'
+    }
+  } catch {
+    pwdError.value = '验证失败，请重试'
+  } finally {
+    verifying.value = false
+  }
 }
 
 async function loadData() {
@@ -336,8 +349,8 @@ onMounted(async () => {
           @keyup.enter="verifyPassword"
         />
         <p v-if="pwdError" class="error">{{ pwdError }}</p>
-        <button type="button" class="submit-btn" @click="verifyPassword">
-          <span>进入甜蜜世界 ✨</span>
+        <button type="button" class="submit-btn" :disabled="verifying" @click="verifyPassword">
+          <span>{{ verifying ? '验证中…' : '进入甜蜜世界 ✨' }}</span>
         </button>
       </div>
     </div>
@@ -377,21 +390,45 @@ onMounted(async () => {
               <span class="name">{{ config.name1 }}</span>
             </div>
             <div class="heartbeat-line">
-              <svg viewBox="0 0 120 40" class="heart-svg">
-                <path
-                  class="heart-path"
-                  d="M10 20 Q30 0 60 20 Q90 40 110 20"
-                  fill="none"
-                  stroke="url(#heartGrad)"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                />
+              <svg viewBox="0 0 200 50" class="heart-svg" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                   <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style="stop-color:#ff6b9d" />
-                    <stop offset="100%" style="stop-color:#c44569" />
+                    <stop offset="0%" stop-color="#ff6b9d" stop-opacity="0.6" />
+                    <stop offset="50%" stop-color="#ff3d7f" />
+                    <stop offset="100%" stop-color="#c44569" stop-opacity="0.6" />
+                  </linearGradient>
+                  <filter id="heartGlow">
+                    <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
+                    <feMerge>
+                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                <!-- 基础心电图波形 -->
+                <path
+                  class="ecg-base"
+                  d="M0 25 L20 25 L28 25 L32 10 L36 35 L40 18 L44 30 L48 25 L80 25 L88 25 L92 10 L96 35 L100 18 L104 30 L108 25 L140 25 L148 25 L152 10 L156 35 L160 18 L164 30 L168 25 L200 25"
+                  fill="none"
+                  stroke="url(#heartGrad)"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  filter="url(#heartGlow)"
+                />
+                <!-- 动画扫描线 -->
+                <rect class="scanner" x="-20" y="0" width="20" height="50" fill="url(#scanGrad)" opacity="0.6">
+                  <animateTransform attributeName="transform" type="translate" from="-20 0" to="220 0" dur="2.5s" repeatCount="indefinite" />
+                </rect>
+                <defs>
+                  <linearGradient id="scanGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#ff6b9d" stop-opacity="0" />
+                    <stop offset="50%" stop-color="#ff3d7f" stop-opacity="0.5" />
+                    <stop offset="100%" stop-color="#ff6b9d" stop-opacity="0" />
                   </linearGradient>
                 </defs>
+                <!-- 中心爱心 -->
+                <text x="100" y="30" text-anchor="middle" font-size="14" fill="#ff6b9d" opacity="0.9" class="heart-pulse">💗</text>
               </svg>
             </div>
             <div class="avatar-wrap">
@@ -832,26 +869,39 @@ onMounted(async () => {
 }
 
 .heartbeat-line {
-  width: 80px;
-  height: 40px;
+  width: 160px;
+  height: 50px;
   flex-shrink: 0;
+  overflow: visible;
 }
 
 .heart-svg {
   width: 100%;
   height: 100%;
+  overflow: visible;
 }
 
-.heart-path {
-  stroke-dasharray: 200;
-  stroke-dashoffset: 200;
-  animation: draw 2s ease-in-out infinite;
+.ecg-base {
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: ecgDraw 2s ease-in-out infinite;
 }
 
-@keyframes draw {
-  0% { stroke-dashoffset: 200; }
-  50% { stroke-dashoffset: 0; }
-  100% { stroke-dashoffset: 200; }
+@keyframes ecgDraw {
+  0% { stroke-dashoffset: 600; }
+  70% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.heart-pulse {
+  animation: heartPulse 1.2s ease-in-out infinite;
+  transform-origin: 100px 25px;
+}
+
+@keyframes heartPulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  30% { transform: scale(1.3); opacity: 1; }
+  60% { transform: scale(0.95); }
 }
 
 .love-time-block {

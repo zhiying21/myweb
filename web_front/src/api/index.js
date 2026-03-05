@@ -1,0 +1,8 @@
+export { default as authApi } from './auth'
+export { default as siteApi } from './site'
+export { default as documentApi } from './document'
+export { default as messageApi } from './message'
+export { default as ticketApi } from './ticket'
+export { default as resourceApi } from './resource'
+export { default as loveApi } from './love'
+export { default as adminApi } from './admin'
