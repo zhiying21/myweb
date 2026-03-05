@@ -145,6 +145,55 @@ CREATE TABLE IF NOT EXISTS `resume` (
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 恋爱日记表（记录两个人的点滴故事）
+CREATE TABLE IF NOT EXISTS `love_diary` (
+    `id`                 BIGINT       NOT NULL AUTO_INCREMENT,
+    `title`              VARCHAR(256) NOT NULL COMMENT '日记标题',
+    `content`            LONGTEXT     NOT NULL COMMENT '日记内容（Markdown）',
+    `date`               DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '日记日期',
+    `emotion_score`      INT          DEFAULT 3 COMMENT '情感评分(1-5)',
+    `emotion_analysis`   VARCHAR(512) DEFAULT NULL COMMENT '情感分析结果',
+    `is_public`          BOOLEAN      DEFAULT FALSE COMMENT '是否公开',
+    `create_time`        DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    `update_time`        DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted`            TINYINT      DEFAULT 0,
+    PRIMARY KEY (`id`),
+    KEY `idx_date` (`date`),
+    KEY `idx_is_public` (`is_public`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='恋爱日记记录表';
+
+-- 纪念日/提醒表（生日、周年等重要日期）
+CREATE TABLE IF NOT EXISTS `love_reminder` (
+    `id`                 BIGINT       NOT NULL AUTO_INCREMENT,
+    `title`              VARCHAR(256) NOT NULL COMMENT '纪念日标题（如：第1000天、生日）',
+    `date`               DATETIME     NOT NULL COMMENT '纪念日日期',
+    `description`        VARCHAR(512) DEFAULT NULL COMMENT '纪念日描述',
+    `frequency`          VARCHAR(32)  DEFAULT 'once' COMMENT '重复频率: once（一次）, yearly（每年）, monthly（每月）, daily（每天）',
+    `is_enabled`         BOOLEAN      DEFAULT TRUE COMMENT '是否启用提醒',
+    `create_time`        DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    `update_time`        DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted`            TINYINT      DEFAULT 0,
+    PRIMARY KEY (`id`),
+    KEY `idx_date` (`date`),
+    KEY `idx_is_enabled` (`is_enabled`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='恋爱纪念日表';
+
+-- 恋爱照片表（与恋人的甜蜜照片）
+CREATE TABLE IF NOT EXISTS `love_photo` (
+    `id`                 BIGINT       NOT NULL AUTO_INCREMENT,
+    `url`                VARCHAR(512) NOT NULL COMMENT 'oss/本地存储URL',
+    `description`        VARCHAR(512) DEFAULT NULL COMMENT '照片描述',
+    `taken_date`         DATETIME     DEFAULT NULL COMMENT '拍摄日期',
+    `tags`               VARCHAR(256) DEFAULT NULL COMMENT '标签(逗号分隔)',
+    `is_featured`        BOOLEAN      DEFAULT FALSE COMMENT '是否精选',
+    `create_time`        DATETIME     DEFAULT CURRENT_TIMESTAMP,
+    `update_time`        DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted`            TINYINT      DEFAULT 0,
+    PRIMARY KEY (`id`),
+    KEY `idx_taken_date` (`taken_date`),
+    KEY `idx_is_featured` (`is_featured`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='恋爱照片表';
+
 -- 初始化网站配置（site_start_time 仅首次插入，resume_password 可更新）
 INSERT INTO `site_config` (`config_key`, `config_value`) VALUES ('site_start_time', NOW())
 ON DUPLICATE KEY UPDATE config_key = config_key;
