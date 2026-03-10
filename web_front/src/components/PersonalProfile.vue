@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Chart, registerables } from 'chart.js'
+import request from '@/utils/request'
 
 const router = useRouter()
 
@@ -29,19 +30,15 @@ let charIndex = 0
 let isDeleting = false
 
 const visitCount = ref(0)
-const runningMinutes = ref(0)
+const runningHours = ref(0)
 const chartRef = ref(null)
+let activityChart = null
 
 const notesCount = ref(0)
 const blogCount = ref(0)
 const allDocuments = ref([])
-
-const techStack = [
-  { name: 'Vue', value: 35, color: '#7dd3fc' },
-  { name: 'Spring Boot', value: 30, color: '#38bdf8' },
-  { name: 'TypeScript', value: 25, color: '#22d3ee' },
-  { name: 'MySQL', value: 10, color: '#bae6fd' },
-]
+const githubActivity = ref([])
+const githubLabels = ref([])
 
 const PAGE_SIZE = 4
 const currentPage = ref(1)
@@ -141,58 +138,68 @@ function initScrollAnimations() {
 
 function initChart() {
   if (!chartRef.value) return
+  if (activityChart) activityChart.destroy()
   const ctx = chartRef.value.getContext('2d')
-  new Chart(ctx, {
-    type: 'doughnut',
+  activityChart = new Chart(ctx, {
+    type: 'line',
     data: {
-      labels: techStack.map(t => t.name),
-      datasets: [{ data: techStack.map(t => t.value), backgroundColor: techStack.map(t => t.color), borderWidth: 0 }],
+      labels: githubLabels.value,
+      datasets: [{
+        label: 'GitHub 活跃度',
+        data: githubActivity.value,
+        borderColor: '#22c55e',
+        backgroundColor: 'rgba(34, 197, 94, 0.2)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.35,
+        pointRadius: 2,
+        pointHoverRadius: 4,
+      }],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom' } },
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          ticks: { color: 'rgba(120, 120, 120, 0.8)' },
+          grid: { display: false },
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0, color: 'rgba(120, 120, 120, 0.8)' },
+          grid: { color: 'rgba(120, 120, 120, 0.15)' },
+        },
+      },
     },
   })
 }
 
-async function fetchVisitCount() {
-  const appId = import.meta.env.VITE_LEANCLOUD_APP_ID
-  const appKey = import.meta.env.VITE_LEANCLOUD_APP_KEY
-  if (!appId || !appKey) { visitCount.value = 0; return }
+async function fetchSiteStats() {
   try {
-    const { default: AV } = await import('leancloud-storage')
-    AV.init({ appId, appKey })
-    const Counter = AV.Object.extend('Counter')
-    const query = new AV.Query('Counter')
-    query.equalTo('page', 'home')
-    let obj = await query.first()
-    if (!obj) { obj = new Counter(); obj.set('page', 'home'); obj.set('count', 0) }
-    obj.increment('count', 1)
-    await obj.save()
-    visitCount.value = obj.get('count')
-  } catch { visitCount.value = 0 }
-}
-
-async function fetchRunningMinutes() {
-  try {
-    const { default: request } = await import('@/utils/request')
-    const res = await request.get('/site/running-minutes')
-    runningMinutes.value = (res && res.data != null) ? res.data : 0
-  } catch { runningMinutes.value = 0 }
+    await request.post('/site/visit')
+    const res = await request.get('/site/stats')
+    const d = res?.data ?? res
+    runningHours.value = d?.runningHours ?? 0
+    visitCount.value = d?.visitCount ?? 0
+    blogCount.value = d?.blogCount ?? 0
+    notesCount.value = d?.noteCount ?? 0
+  } catch {
+    runningHours.value = 0
+    visitCount.value = 0
+    blogCount.value = 0
+    notesCount.value = 0
+  }
 }
 
 async function fetchDocs() {
   try {
-    const { default: request } = await import('@/utils/request')
     const [notesRes, blogRes] = await Promise.all([
       request.get('/document/list', { params: { type: 'notes' } }),
       request.get('/document/list', { params: { type: 'blog' } }),
     ])
     const notes = (notesRes && notesRes.data) ? notesRes.data : []
     const blogs = (blogRes && blogRes.data) ? blogRes.data : []
-    notesCount.value = notes.length
-    blogCount.value = blogs.length
     allDocuments.value = [
       ...notes.map((d) => ({ ...d, type: 'notes', path: d.id, image: d.coverImage })),
       ...blogs.map((d) => ({ ...d, type: 'blog', path: d.id, image: d.coverImage })),
@@ -204,10 +211,58 @@ async function fetchDocs() {
   }
 }
 
+function formatActivityDate(date) {
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+  return `${month}/${day}`
+}
+
+function buildFallbackActivity() {
+  const labels = []
+  const values = []
+  const today = new Date()
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(today)
+    d.setDate(today.getDate() - i)
+    labels.push(formatActivityDate(d))
+    values.push((i % 5) + 1)
+  }
+  githubLabels.value = labels
+  githubActivity.value = values
+}
+
+async function fetchGithubActivity() {
+  try {
+    const resp = await fetch('https://api.github.com/users/zhiying21/events/public')
+    if (!resp.ok) throw new Error('GitHub API error')
+    const events = await resp.json()
+    const countMap = {}
+    for (const ev of events) {
+      const key = (ev.created_at || '').slice(0, 10)
+      if (!key) continue
+      countMap[key] = (countMap[key] || 0) + 1
+    }
+    const labels = []
+    const values = []
+    const today = new Date()
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(today)
+      d.setDate(today.getDate() - i)
+      const key = d.toISOString().slice(0, 10)
+      labels.push(formatActivityDate(d))
+      values.push(countMap[key] || 0)
+    }
+    githubLabels.value = labels
+    githubActivity.value = values
+  } catch {
+    buildFallbackActivity()
+  }
+}
+
 onMounted(async () => {
-  fetchVisitCount()
-  fetchRunningMinutes()
+  await fetchSiteStats()
   await fetchDocs()
+  await fetchGithubActivity()
   typeTimer = setTimeout(typeTick, 400)
   if (paginatedDocs.value.length) selectDoc(paginatedDocs.value[0])
   nextTick(() => {
@@ -216,7 +271,10 @@ onMounted(async () => {
   })
 })
 
-onUnmounted(() => clearTimeout(typeTimer))
+onUnmounted(() => {
+  clearTimeout(typeTimer)
+  if (activityChart) activityChart.destroy()
+})
 </script>
 
 <template>
@@ -257,8 +315,8 @@ onUnmounted(() => clearTimeout(typeTimer))
             <h3 class="block-title">网站数据统计</h3>
             <div class="stats-grid">
               <div class="stat-item">
-                <span class="stat-value">{{ runningMinutes }}</span>
-                <span class="stat-label">运行(分钟)</span>
+                <span class="stat-value">{{ runningHours }}</span>
+                <span class="stat-label">运行(小时)</span>
               </div>
               <div class="stat-item">
                 <span class="stat-value">{{ notesCount }}</span>
@@ -289,10 +347,13 @@ onUnmounted(() => clearTimeout(typeTimer))
               :key="doc.path"
               class="doc-card"
               :class="{ active: selectedDoc?.id === doc.id }"
-              @click="selectDoc(doc)"
+              @click="goToDoc(doc)"
             >
-              <div class="doc-card-img">
-                <img :src="doc.image" :alt="doc.title" @error="$event.target.src='/vite.svg'" />
+              <div class="doc-card-media">
+                <div class="doc-card-img">
+                  <img :src="doc.publisherAvatar || doc.image || '/vite.svg'" :alt="doc.title" @error="$event.target.src='/vite.svg'" />
+                </div>
+                <p class="doc-card-author">{{ doc.publisherNickname || '匿名' }}</p>
               </div>
               <div class="doc-card-body">
                 <h4 class="doc-card-title">{{ doc.title }}</h4>
@@ -588,6 +649,20 @@ onUnmounted(() => clearTimeout(typeTimer))
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.doc-card-media {
+  flex-shrink: 0;
+  flex: 1;
+  min-width: 0;
+  max-width: 180px;
+}
+
+.doc-card-author {
+  margin-top: 8px;
+  font-size: 12px;
+  text-align: center;
+  opacity: 0.85;
 }
 
 .doc-card-body { flex: 2; min-width: 0; }

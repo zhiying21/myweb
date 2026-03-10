@@ -2,14 +2,18 @@
 import { ref, computed } from 'vue'
 import MarkdownIt from 'markdown-it'
 import request from '@/utils/request'
+import { useAuth } from '@/stores/auth'
 
-const PASSWORD = 'AC_pH_under7'
 const md = new MarkdownIt({ html: true, linkify: true })
+const { user } = useAuth()
 
 const passwordInput = ref('')
 const unlocked = ref(false)
 const content = ref('')
+const editingContent = ref('')
 const loading = ref(false)
+const saving = ref(false)
+const editMode = ref(false)
 const error = ref('')
 
 async function verify() {
@@ -38,12 +42,43 @@ async function fetchContent() {
   try {
     const res = await request.get('/resume/content')
     content.value = (res && res.data) ? res.data : (res || '')
+    editingContent.value = content.value
   } catch {
     content.value = ''
+    editingContent.value = ''
   }
 }
 
 const htmlContent = computed(() => (content.value ? md.render(content.value) : ''))
+const isAdmin = computed(() => user.value?.role === 'ADMIN')
+
+function startEdit() {
+  editingContent.value = content.value
+  editMode.value = true
+}
+
+function cancelEdit() {
+  editMode.value = false
+  editingContent.value = content.value
+}
+
+async function saveResume() {
+  if (!editingContent.value.trim()) {
+    alert('内容不能为空')
+    return
+  }
+  saving.value = true
+  try {
+    await request.put('/resume/content', { content: editingContent.value })
+    content.value = editingContent.value
+    editMode.value = false
+    alert('简历保存成功')
+  } catch (e) {
+    alert(e.message || '保存失败')
+  } finally {
+    saving.value = false
+  }
+}
 </script>
 
 <template>
@@ -69,8 +104,20 @@ const htmlContent = computed(() => (content.value ? md.render(content.value) : '
       <div class="resume-inner">
         <div class="resume-header">
           <h1>卢欢 · 求职简历</h1>
+          <div v-if="isAdmin" class="resume-admin-actions">
+            <button v-if="!editMode" type="button" class="submit-btn admin-btn" @click="startEdit">在线编辑</button>
+            <template v-else>
+              <button type="button" class="submit-btn admin-btn" :disabled="saving" @click="saveResume">
+                {{ saving ? '保存中…' : '保存' }}
+              </button>
+              <button type="button" class="cancel-btn" @click="cancelEdit">取消</button>
+            </template>
+          </div>
         </div>
-        <div class="resume-body md-body" v-html="htmlContent" />
+        <div v-if="!editMode" class="resume-body md-body" v-html="htmlContent" />
+        <div v-else class="resume-body">
+          <textarea v-model="editingContent" class="resume-editor" rows="24" />
+        </div>
       </div>
     </div>
   </div>
@@ -196,9 +243,46 @@ const htmlContent = computed(() => (content.value ? md.render(content.value) : '
   letter-spacing: 2px;
 }
 
+.resume-admin-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+}
+
+.admin-btn {
+  width: auto;
+  margin-top: 0;
+  padding: 10px 18px;
+  font-size: 14px;
+}
+
+.cancel-btn {
+  padding: 10px 18px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
 .resume-body {
   padding: 32px 40px 48px;
   color: #374151;
+}
+
+.resume-editor {
+  width: 100%;
+  min-height: 520px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 14px;
+  line-height: 1.7;
+  resize: vertical;
+  box-sizing: border-box;
+  color: #111827;
+  background: #ffffff;
+  font-family: 'Courier New', monospace;
 }
 
 :deep(.md-body h1),
@@ -287,6 +371,18 @@ const htmlContent = computed(() => (content.value ? md.render(content.value) : '
 [data-theme="night"] .resume-header h1,
 [data-theme="night"] .gate-card h2 {
   color: #ffffff;
+}
+
+[data-theme="night"] .cancel-btn {
+  color: #e5e7eb;
+  border-color: rgba(209, 213, 219, 0.35);
+  background: rgba(55, 65, 81, 0.9);
+}
+
+[data-theme="night"] .resume-editor {
+  background: rgba(31, 41, 55, 0.96);
+  color: #f3f4f6;
+  border-color: rgba(209, 213, 219, 0.3);
 }
 
 [data-theme="night"] .hint {

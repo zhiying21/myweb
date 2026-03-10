@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute, RouterLink } from 'vue-router'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
 import MarkdownDocumentViewer from '@/components/MarkdownDocumentViewer.vue'
 import VideoBackground from '@/components/VideoBackground.vue'
 import AuthModal from '@/components/AuthModal.vue'
@@ -12,6 +12,7 @@ const showAuth = ref(false)
 let pendingUpload = false
 
 const route = useRoute()
+const router = useRouter()
 const notesList = ref([])
 const currentDoc = ref(null)
 const comments = ref([])
@@ -97,6 +98,10 @@ function openUpload() {
 
 function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+function openDoc(id) {
+  router.push({ path: '/notes', query: { id } })
 }
 
 function handleFileUpload(e) {
@@ -194,16 +199,13 @@ function formatDate(t) {
         </div>
       </div>
       <div class="doc-grid">
-        <div v-for="doc in notesList" :key="doc.id" class="doc-item glass-card">
+        <div v-for="doc in notesList" :key="doc.id" class="doc-item glass-card" @click="openDoc(doc.id)">
           <div class="doc-thumb">
-            <img v-if="doc.coverImage" :src="doc.coverImage" :alt="doc.title" @error="$event.target.style.display='none'" />
+            <img v-if="doc.publisherAvatar || doc.coverImage" :src="doc.publisherAvatar || doc.coverImage" :alt="doc.title" @error="$event.target.style.display='none'" />
             <span v-else class="thumb-placeholder">📓</span>
           </div>
-          <RouterLink :to="{ path: '/notes', query: { id: doc.id } }" class="doc-title-link">
-            <h3>{{ doc.title }}</h3>
-          </RouterLink>
+          <h3>{{ doc.title }}</h3>
           <div class="doc-author-row">
-            <img v-if="doc.publisherAvatar" :src="doc.publisherAvatar" alt="" class="mini-avatar" @error="$event.target.style.display='none'" />
             <span class="doc-meta">{{ doc.publisherNickname || '匿名' }}</span>
             <span class="doc-date">{{ formatDate(doc.createTime) }}</span>
           </div>
@@ -372,11 +374,10 @@ function formatDate(t) {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
-.doc-title-link { text-decoration: none; color: inherit; }
-
 .doc-thumb {
+  position: relative;
   width: 100%;
-  aspect-ratio: 16/10;
+  aspect-ratio: 1/1;
   border-radius: 10px;
   overflow: hidden;
   margin-bottom: 14px;
